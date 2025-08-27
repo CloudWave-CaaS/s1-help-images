@@ -1,12 +1,12 @@
 @echo off
 :: ===================================================================
-:: SentinelOne Full Removal Script (Regini + Logging, Full Expansion)
+:: SentinelOne Full Removal Script (Regini + Logging, Fixed Quotes)
 :: ===================================================================
 :: Run as Administrator
 :: ===================================================================
 
 set LOGFILE=C:\sentinelone_cleanup.log
-echo === SentinelOne Removal Log - %DATE% %TIME% === > %LOGFILE%
+echo === SentinelOne Removal Log - %DATE% %TIME% === > "%LOGFILE%"
 
 echo.
 echo === SentinelOne Full Removal Script ===
@@ -17,26 +17,26 @@ pause
 :: ------------------------------------------------------
 :: Create temporary ACL file to grant Administrators full control
 :: ------------------------------------------------------
-echo HKEY_CLASSES_ROOT [1 5 7] > %temp%\reset_acl.txt
-echo HKEY_LOCAL_MACHINE\SOFTWARE [1 5 7] >> %temp%\reset_acl.txt
-echo HKEY_LOCAL_MACHINE\SYSTEM [1 5 7] >> %temp%\reset_acl.txt
-echo HKEY_CURRENT_USER\Software [1 5 7] >> %temp%\reset_acl.txt
+echo HKEY_CLASSES_ROOT [1 5 7] > "%temp%\reset_acl.txt"
+echo HKEY_LOCAL_MACHINE\SOFTWARE [1 5 7] >> "%temp%\reset_acl.txt"
+echo HKEY_LOCAL_MACHINE\SYSTEM [1 5 7] >> "%temp%\reset_acl.txt"
+echo HKEY_CURRENT_USER\Software [1 5 7] >> "%temp%\reset_acl.txt"
 
-regini %temp%\reset_acl.txt >nul 2>&1
+regini "%temp%\reset_acl.txt" >nul 2>&1
 
 :: ------------------------------------------------------
 :: Function to delete registry key with logging
 :: ------------------------------------------------------
 :DelKey
 echo [*] Deleting key: %~1
-echo [*] Deleting key: %~1 >> %LOGFILE%
+echo [*] Deleting key: %~1 >> "%LOGFILE%"
 reg delete "%~1" /f >nul 2>&1
 if %errorlevel%==0 (
     echo [+] SUCCESS: %~1
-    echo [+] SUCCESS: %~1 >> %LOGFILE%
+    echo [+] SUCCESS: %~1 >> "%LOGFILE%"
 ) else (
     echo [!] FAILED: %~1
-    echo [!] FAILED: %~1 >> %LOGFILE%
+    echo [!] FAILED: %~1 >> "%LOGFILE%"
 )
 goto :eof
 
@@ -45,14 +45,14 @@ goto :eof
 :: ------------------------------------------------------
 :DelVal
 echo [*] Deleting value: %~1 [%~2]
-echo [*] Deleting value: %~1 [%~2] >> %LOGFILE%
+echo [*] Deleting value: %~1 [%~2] >> "%LOGFILE%"
 reg delete "%~1" /v "%~2" /f >nul 2>&1
 if %errorlevel%==0 (
     echo [+] SUCCESS: %~1 [%~2]
-    echo [+] SUCCESS: %~1 [%~2] >> %LOGFILE%
+    echo [+] SUCCESS: %~1 [%~2] >> "%LOGFILE%"
 ) else (
     echo [!] FAILED: %~1 [%~2]
-    echo [!] FAILED: %~1 [%~2] >> %LOGFILE%
+    echo [!] FAILED: %~1 [%~2] >> "%LOGFILE%"
 )
 goto :eof
 
@@ -176,26 +176,26 @@ call :DelVal "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" "Sentinel Agen
 :: Delete SentinelOne program directories
 :: ------------------------------------------------------
 echo [*] Deleting directories...
-echo [*] Deleting directories... >> %LOGFILE%
+echo [*] Deleting directories... >> "%LOGFILE%"
 
 rmdir /s /q "C:\ProgramData\Sentinel" && (
-    echo [+] SUCCESS: C:\ProgramData\Sentinel >> %LOGFILE%
+    echo [+] SUCCESS: C:\ProgramData\Sentinel >> "%LOGFILE%"
     echo [+] SUCCESS: C:\ProgramData\Sentinel
 ) || (
-    echo [!] FAILED: C:\ProgramData\Sentinel >> %LOGFILE%
+    echo [!] FAILED: C:\ProgramData\Sentinel >> "%LOGFILE%"
     echo [!] FAILED: C:\ProgramData\Sentinel
 )
 
 rmdir /s /q "C:\Program Files\SentinelOne" && (
-    echo [+] SUCCESS: C:\Program Files\SentinelOne >> %LOGFILE%
+    echo [+] SUCCESS: C:\Program Files\SentinelOne >> "%LOGFILE%"
     echo [+] SUCCESS: C:\Program Files\SentinelOne
 ) || (
-    echo [!] FAILED: C:\Program Files\SentinelOne >> %LOGFILE%
+    echo [!] FAILED: C:\Program Files\SentinelOne >> "%LOGFILE%"
     echo [!] FAILED: C:\Program Files\SentinelOne
 )
 
 :: Cleanup
-del %temp%\reset_acl.txt >nul 2>&1
+del "%temp%\reset_acl.txt" >nul 2>&1
 
 echo.
 echo === SentinelOne removal complete. ===
