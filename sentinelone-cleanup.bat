@@ -1,92 +1,163 @@
 @echo off
 :: ===================================================================
-:: SentinelOne Full Removal Script
+:: SentinelOne Full Removal Script (Regini version - no SubInACL needed)
 :: ===================================================================
 :: Run as Administrator
 :: ===================================================================
 
 echo.
-echo === SentinelOne Removal Script ===
-echo You must run this as Administrator!
+echo === SentinelOne Full Removal Script ===
+echo Using REGINI to reset registry ACLs...
 pause
 
-:: ----------------------
-:: Delete Registry Keys
-:: ----------------------
-echo Deleting registry keys...
+:: ------------------------------------------------------
+:: Create temporary ACL file to grant Administrators full control
+:: ------------------------------------------------------
+echo HKEY_CLASSES_ROOT [1 5 7] > %temp%\reset_acl.txt
+echo HKEY_LOCAL_MACHINE\SOFTWARE [1 5 7] >> %temp%\reset_acl.txt
+echo HKEY_LOCAL_MACHINE\SYSTEM [1 5 7] >> %temp%\reset_acl.txt
+echo HKEY_CURRENT_USER\Software [1 5 7] >> %temp%\reset_acl.txt
 
-:: HKCR (HKEY_CLASSES_ROOT)
-reg delete "HKCR\AppID\{1ECB7470-7BA4-4F64-A41D-BDF1B38DEED8}" /f
-reg delete "HKCR\AppID\{4F58E51B-3F2B-4807-AB8C-2A7F143E9C3F}" /f
-reg delete "HKCR\AppID\SentinelHelperService" /f
+:: Apply new ACLs
+regini %temp%\reset_acl.txt
 
-reg delete "HKCR\CLSID\{28B58EFD-EED3-49D0-9AC3-A7A9E39A6303}" /f
-reg delete "HKCR\CLSID\{DFE127B0-F72C-40FB-BEF8-9F29CB996B9C}" /f
+:: ------------------------------------------------------
+:: Function-like macro to delete registry key
+:: ------------------------------------------------------
+:DelKey
+echo [*] Deleting key: %~1
+reg delete "%~1" /f >nul 2>&1
+goto :eof
 
-reg delete "HKCR\Interface\{0420773B-38C3-4300-AD2B-23652FEEE26C}" /f
-reg delete "HKCR\Interface\{51821FE8-516B-4BE3-9578-31B2DFAD4042}" /f
-reg delete "HKCR\Interface\{8E470FB5-6800-4FF6-8E0A-620F676C912E}" /f
-
-reg delete "HKCR\SentinelAgent" /f
-reg delete "HKCR\SentinelHelper" /f
-reg delete "HKCR\SentinelOneLog" /f
-
-reg delete "HKCR\TypeLib\{667D5A92-7C14-4687-B20E-A5CF06FEF1AF}" /f
-reg delete "HKCR\TypeLib\{BED0DAEE-A8DC-40E6-AAD6-DCA5532B746C}" /f
+:: ------------------------------------------------------
+:: HKEY_CLASSES_ROOT
+:: ------------------------------------------------------
+call :DelKey "HKCR\AppID\{1ECB7470-7BA4-4F64-A41D-BDF1B38DEED8}"
+call :DelKey "HKCR\AppID\{4F58E51B-3F2B-4807-AB8C-2A7F143E9C3F}"
+call :DelKey "HKCR\AppID\SentinelHelperService"
+call :DelKey "HKCR\CLSID\{28B58EFD-EED3-49D0-9AC3-A7A9E39A6303}"
+call :DelKey "HKCR\CLSID\{DFE127B0-F72C-40FB-BEF8-9F29CB996B9C}"
+call :DelKey "HKCR\Interface\{0420773B-38C3-4300-AD2B-23652FEEE26C}"
+call :DelKey "HKCR\Interface\{51821FE8-516B-4BE3-9578-31B2DFAD4042}"
+call :DelKey "HKCR\Interface\{8E470FB5-6800-4FF6-8E0A-620F676C912E}"
+call :DelKey "HKCR\SentinelAgent"
+call :DelKey "HKCR\SentinelHelper"
+call :DelKey "HKCR\SentinelOneLog"
+call :DelKey "HKCR\TypeLib\{667D5A92-7C14-4687-B20E-A5CF06FEF1AF}"
+call :DelKey "HKCR\TypeLib\{BED0DAEE-A8DC-40E6-AAD6-DCA5532B746C}"
 
 :: WOW6432Node under HKCR
-reg delete "HKCR\WOW6432Node\AppID\{1ECB7470-7BA4-4F64-A41D-BDF1B38DEED8}" /f
-reg delete "HKCR\WOW6432Node\AppID\{4F58E51B-3F2B-4807-AB8C-2A7F143E9C3F}" /f
-reg delete "HKCR\WOW6432Node\AppID\SentinelHelperService" /f
-reg delete "HKCR\WOW6432Node\Interface\{0420773B-38C3-4300-AD2B-23652FEEE26C}" /f
-reg delete "HKCR\WOW6432Node\Interface\{51821FE8-516B-4BE3-9578-31B2DFAD4042}" /f
-reg delete "HKCR\WOW6432Node\Interface\{8E470FB5-6800-4FF6-8E0A-620F676C912E}" /f
-reg delete "HKCR\WOW6432Node\TypeLib\{667D5A92-7C14-4687-B20E-A5CF06FEF1AF}" /f
-reg delete "HKCR\WOW6432Node\TypeLib\{BED0DAEE-A8DC-40E6-AAD6-DCA5532B746C}" /f
+call :DelKey "HKCR\WOW6432Node\AppID\{1ECB7470-7BA4-4F64-A41D-BDF1B38DEED8}"
+call :DelKey "HKCR\WOW6432Node\AppID\{4F58E51B-3F2B-4807-AB8C-2A7F143E9C3F}"
+call :DelKey "HKCR\WOW6432Node\AppID\SentinelHelperService"
+call :DelKey "HKCR\WOW6432Node\Interface\{0420773B-38C3-4300-AD2B-23652FEEE26C}"
+call :DelKey "HKCR\WOW6432Node\Interface\{51821FE8-516B-4BE3-9578-31B2DFAD4042}"
+call :DelKey "HKCR\WOW6432Node\Interface\{8E470FB5-6800-4FF6-8E0A-620F676C912E}"
+call :DelKey "HKCR\WOW6432Node\TypeLib\{667D5A92-7C14-4687-B20E-A5CF06FEF1AF}"
+call :DelKey "HKCR\WOW6432Node\TypeLib\{BED0DAEE-A8DC-40E6-AAD6-DCA5532B746C}"
 
-:: HKLM SOFTWARE\Classes
-reg delete "HKLM\SOFTWARE\Classes\AppID\{1ECB7470-7BA4-4F64-A41D-BDF1B38DEED8}" /f
-reg delete "HKLM\SOFTWARE\Classes\AppID\{4F58E51B-3F2B-4807-AB8C-2A7F143E9C3F}" /f
-reg delete "HKLM\SOFTWARE\Classes\AppID\SentinelHelperService" /f
+:: ------------------------------------------------------
+:: HKLM\SOFTWARE\Classes
+:: ------------------------------------------------------
+call :DelKey "HKLM\SOFTWARE\Classes\AppID\{1ECB7470-7BA4-4F64-A41D-BDF1B38DEED8}"
+call :DelKey "HKLM\SOFTWARE\Classes\AppID\{4F58E51B-3F2B-4807-AB8C-2A7F143E9C3F}"
+call :DelKey "HKLM\SOFTWARE\Classes\AppID\SentinelHelperService"
+call :DelKey "HKLM\SOFTWARE\Classes\CLSID\{28B58EFD-EED3-49D0-9AC3-A7A9E39A6303}"
+call :DelKey "HKLM\SOFTWARE\Classes\CLSID\{DFE127B0-F72C-40FB-BEF8-9F29CB996B9C}"
+call :DelKey "HKLM\SOFTWARE\Classes\Interface\{0420773B-38C3-4300-AD2B-23652FEEE26C}"
+call :DelKey "HKLM\SOFTWARE\Classes\Interface\{51821FE8-516B-4BE3-9578-31B2DFAD4042}"
+call :DelKey "HKLM\SOFTWARE\Classes\Interface\{8E470FB5-6800-4FF6-8E0A-620F676C912E}"
+call :DelKey "HKLM\SOFTWARE\Classes\SentinelAgent"
+call :DelKey "HKLM\SOFTWARE\Classes\SentinelHelper"
+call :DelKey "HKLM\SOFTWARE\Classes\SentinelOneLog"
+call :DelKey "HKLM\SOFTWARE\Classes\TypeLib\{667D5A92-7C14-4687-B20E-A5CF06FEF1AF}"
+call :DelKey "HKLM\SOFTWARE\Classes\TypeLib\{BED0DAEE-A8DC-40E6-AAD6-DCA5532B746C}"
 
-reg delete "HKLM\SOFTWARE\Classes\CLSID\{28B58EFD-EED3-49D0-9AC3-A7A9E39A6303}" /f
-reg delete "HKLM\SOFTWARE\Classes\CLSID\{DFE127B0-F72C-40FB-BEF8-9F29CB996B9C}" /f
-reg delete "HKLM\SOFTWARE\Classes\Interface\{0420773B-38C3-4300-AD2B-23652FEEE26C}" /f
-reg delete "HKLM\SOFTWARE\Classes\Interface\{51821FE8-516B-4BE3-9578-31B2DFAD4042}" /f
-reg delete "HKLM\SOFTWARE\Classes\Interface\{8E470FB5-6800-4FF6-8E0A-620F676C912E}" /f
+:: WOW6432Node under HKLM\SOFTWARE\Classes
+call :DelKey "HKLM\SOFTWARE\Classes\WOW6432Node\AppID\{1ECB7470-7BA4-4F64-A41D-BDF1B38DEED8}"
+call :DelKey "HKLM\SOFTWARE\Classes\WOW6432Node\AppID\{4F58E51B-3F2B-4807-AB8C-2A7F143E9C3F}"
+call :DelKey "HKLM\SOFTWARE\Classes\WOW6432Node\AppID\SentinelHelperService"
+call :DelKey "HKLM\SOFTWARE\Classes\WOW6432Node\Interface\{0420773B-38C3-4300-AD2B-23652FEEE26C}"
+call :DelKey "HKLM\SOFTWARE\Classes\WOW6432Node\Interface\{51821FE8-516B-4BE3-9578-31B2DFAD4042}"
+call :DelKey "HKLM\SOFTWARE\Classes\WOW6432Node\Interface\{8E470FB5-6800-4FF6-8E0A-620F676C912E}"
+call :DelKey "HKLM\SOFTWARE\Classes\WOW6432Node\TypeLib\{667D5A92-7C14-4687-B20E-A5CF06FEF1AF}"
+call :DelKey "HKLM\SOFTWARE\Classes\WOW6432Node\TypeLib\{BED0DAEE-A8DC-40E6-AAD6-DCA5532B746C}"
 
-reg delete "HKLM\SOFTWARE\Classes\SentinelAgent" /f
-reg delete "HKLM\SOFTWARE\Classes\SentinelHelper" /f
-reg delete "HKLM\SOFTWARE\Classes\SentinelOneLog" /f
+:: ------------------------------------------------------
+:: HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion
+:: ------------------------------------------------------
+call :DelKey "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Sentinel Agent"
+call :DelKey "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\SentinelAgent.exe"
+call :DelKey "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\SentinelCtl.exe"
+call :DelKey "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\SentinelHelperService.exe"
+call :DelKey "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\SentinelRemediation.exe"
+call :DelKey "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\SentinelServiceHost.exe"
+call :DelKey "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\SentinelStaticEngine.exe"
+call :DelKey "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\SentinelStaticEngineScanner.exe"
+call :DelKey "HKLM\SOFTWARE\SentinelOneLog"
 
-reg delete "HKLM\SOFTWARE\Classes\TypeLib\{667D5A92-7C14-4687-B20E-A5CF06FEF1AF}" /f
-reg delete "HKLM\SOFTWARE\Classes\TypeLib\{BED0DAEE-A8DC-40E6-AAD6-DCA5532B746C}" /f
+:: WOW6432Node under HKLM\SOFTWARE
+call :DelKey "HKLM\SOFTWARE\WOW6432Node\Classes\AppID\{1ECB7470-7BA4-4F64-A41D-BDF1B38DEED8}"
+call :DelKey "HKLM\SOFTWARE\WOW6432Node\Classes\AppID\{4F58E51B-3F2B-4807-AB8C-2A7F143E9C3F}"
+call :DelKey "HKLM\SOFTWARE\WOW6432Node\Classes\AppID\SentinelHelperService"
+call :DelKey "HKLM\SOFTWARE\WOW6432Node\Classes\Interface\{0420773B-38C3-4300-AD2B-23652FEEE26C}"
+call :DelKey "HKLM\SOFTWARE\WOW6432Node\Classes\Interface\{51821FE8-516B-4BE3-9578-31B2DFAD4042}"
+call :DelKey "HKLM\SOFTWARE\WOW6432Node\Classes\Interface\{8E470FB5-6800-4FF6-8E0A-620F676C912E}"
+call :DelKey "HKLM\SOFTWARE\WOW6432Node\Classes\TypeLib\{667D5A92-7C14-4687-B20E-A5CF06FEF1AF}"
+call :DelKey "HKLM\SOFTWARE\WOW6432Node\Classes\TypeLib\{BED0DAEE-A8DC-40E6-AAD6-DCA5532B746C}"
+call :DelKey "HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\SentinelAgent.exe"
+call :DelKey "HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\SentinelCtl.exe"
+call :DelKey "HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\SentinelHelperService.exe"
+call :DelKey "HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\SentinelRemediation.exe"
+call :DelKey "HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\SentinelServiceHost.exe"
+call :DelKey "HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\SentinelStaticEngine.exe"
+call :DelKey "HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\SentinelStaticEngineScanner.exe"
 
-:: (Add all other HKLM\SOFTWARE\WOW6432Node\Classes entries here as listed...)
+:: ------------------------------------------------------
+:: HKLM\SYSTEM\ControlSet001 + CurrentControlSet + Setup
+:: ------------------------------------------------------
+call :DelKey "HKLM\SYSTEM\ControlSet001\Control\WMI\Autologger\SentinelLogger"
+call :DelKey "HKLM\SYSTEM\ControlSet001\Control\WMI\Autologger\SentinelLogSession0"
+call :DelKey "HKLM\SYSTEM\ControlSet001\Control\WMI\Autologger\SentinelStatic"
+call :DelKey "HKLM\SYSTEM\ControlSet001\Services\LogProcessorService"
+call :DelKey "HKLM\SYSTEM\ControlSet001\Services\SentinelAgent"
+call :DelKey "HKLM\SYSTEM\ControlSet001\Services\SentinelHelperService"
+call :DelKey "HKLM\SYSTEM\ControlSet001\Services\SentinelMonitor"
+call :DelKey "HKLM\SYSTEM\ControlSet001\Services\SentinelStaticEngine"
 
-:: ----------------------
-:: Delete Registry Values Only
-:: ----------------------
-echo Deleting specific values...
+call :DelKey "HKLM\SYSTEM\CurrentControlSet\Control\WMI\Autologger\SentinelLogger"
+call :DelKey "HKLM\SYSTEM\CurrentControlSet\Control\WMI\Autologger\SentinelLogSession0"
+call :DelKey "HKLM\SYSTEM\CurrentControlSet\Control\WMI\Autologger\SentinelStatic"
+call :DelKey "HKLM\SYSTEM\CurrentControlSet\Services\LogProcessorService"
+call :DelKey "HKLM\SYSTEM\CurrentControlSet\Services\SentinelAgent"
+call :DelKey "HKLM\SYSTEM\CurrentControlSet\Services\SentinelHelperService"
+call :DelKey "HKLM\SYSTEM\CurrentControlSet\Services\SentinelMonitor"
+call :DelKey "HKLM\SYSTEM\CurrentControlSet\Services\SentinelStaticEngine"
 
-:: Delete DWORD SentinelOneLog_.binlog
+call :DelKey "HKLM\SYSTEM\Setup\FirstBoot\Services\LogProcessorService"
+call :DelKey "HKLM\SYSTEM\Setup\FirstBoot\Services\SentinelAgent"
+call :DelKey "HKLM\SYSTEM\Setup\FirstBoot\Services\SentinelHelperService"
+call :DelKey "HKLM\SYSTEM\Setup\FirstBoot\Services\SentinelMonitor"
+call :DelKey "HKLM\SYSTEM\Setup\FirstBoot\Services\SentinelStaticEngine"
+
+:: ------------------------------------------------------
+:: Delete specific registry values
+:: ------------------------------------------------------
+echo [*] Deleting specific values...
 reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts" /v "SentinelOneLog_.binlog" /f
-
-:: Delete Binary "Sentinel Agent"
 reg delete "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run" /v "Sentinel Agent" /f
-
-:: Delete REG_SZ "Sentinel Agent"
 reg delete "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" /v "Sentinel Agent" /f
 
-:: ----------------------
-:: Delete Program Files
-:: ----------------------
-echo Deleting Sentinel directories...
-
+:: ------------------------------------------------------
+:: Delete SentinelOne program directories
+:: ------------------------------------------------------
+echo [*] Deleting directories...
 rmdir /s /q "C:\ProgramData\Sentinel"
 rmdir /s /q "C:\Program Files\SentinelOne"
+
+del %temp%\reset_acl.txt
 
 echo.
 echo === SentinelOne removal complete. ===
 pause
-exit
+exit /b
