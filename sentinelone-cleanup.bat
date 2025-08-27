@@ -1,13 +1,17 @@
 @echo off
 :: ===================================================================
-:: SentinelOne Full Removal Script (Regini version - no SubInACL needed)
+:: SentinelOne Full Removal Script (Regini + Logging, Full Expansion)
 :: ===================================================================
 :: Run as Administrator
 :: ===================================================================
 
+set LOGFILE=C:\sentinelone_cleanup.log
+echo === SentinelOne Removal Log - %DATE% %TIME% === > %LOGFILE%
+
 echo.
 echo === SentinelOne Full Removal Script ===
 echo Using REGINI to reset registry ACLs...
+echo Log file: %LOGFILE%
 pause
 
 :: ------------------------------------------------------
@@ -18,15 +22,38 @@ echo HKEY_LOCAL_MACHINE\SOFTWARE [1 5 7] >> %temp%\reset_acl.txt
 echo HKEY_LOCAL_MACHINE\SYSTEM [1 5 7] >> %temp%\reset_acl.txt
 echo HKEY_CURRENT_USER\Software [1 5 7] >> %temp%\reset_acl.txt
 
-:: Apply new ACLs
-regini %temp%\reset_acl.txt
+regini %temp%\reset_acl.txt >nul 2>&1
 
 :: ------------------------------------------------------
-:: Function-like macro to delete registry key
+:: Function to delete registry key with logging
 :: ------------------------------------------------------
 :DelKey
 echo [*] Deleting key: %~1
+echo [*] Deleting key: %~1 >> %LOGFILE%
 reg delete "%~1" /f >nul 2>&1
+if %errorlevel%==0 (
+    echo [+] SUCCESS: %~1
+    echo [+] SUCCESS: %~1 >> %LOGFILE%
+) else (
+    echo [!] FAILED: %~1
+    echo [!] FAILED: %~1 >> %LOGFILE%
+)
+goto :eof
+
+:: ------------------------------------------------------
+:: Function to delete registry value with logging
+:: ------------------------------------------------------
+:DelVal
+echo [*] Deleting value: %~1 [%~2]
+echo [*] Deleting value: %~1 [%~2] >> %LOGFILE%
+reg delete "%~1" /v "%~2" /f >nul 2>&1
+if %errorlevel%==0 (
+    echo [+] SUCCESS: %~1 [%~2]
+    echo [+] SUCCESS: %~1 [%~2] >> %LOGFILE%
+) else (
+    echo [!] FAILED: %~1 [%~2]
+    echo [!] FAILED: %~1 [%~2] >> %LOGFILE%
+)
 goto :eof
 
 :: ------------------------------------------------------
@@ -114,7 +141,7 @@ call :DelKey "HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows NT\CurrentVersion\Imag
 call :DelKey "HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\SentinelStaticEngineScanner.exe"
 
 :: ------------------------------------------------------
-:: HKLM\SYSTEM\ControlSet001 + CurrentControlSet + Setup
+:: HKLM\SYSTEM
 :: ------------------------------------------------------
 call :DelKey "HKLM\SYSTEM\ControlSet001\Control\WMI\Autologger\SentinelLogger"
 call :DelKey "HKLM\SYSTEM\ControlSet001\Control\WMI\Autologger\SentinelLogSession0"
@@ -124,7 +151,6 @@ call :DelKey "HKLM\SYSTEM\ControlSet001\Services\SentinelAgent"
 call :DelKey "HKLM\SYSTEM\ControlSet001\Services\SentinelHelperService"
 call :DelKey "HKLM\SYSTEM\ControlSet001\Services\SentinelMonitor"
 call :DelKey "HKLM\SYSTEM\ControlSet001\Services\SentinelStaticEngine"
-
 call :DelKey "HKLM\SYSTEM\CurrentControlSet\Control\WMI\Autologger\SentinelLogger"
 call :DelKey "HKLM\SYSTEM\CurrentControlSet\Control\WMI\Autologger\SentinelLogSession0"
 call :DelKey "HKLM\SYSTEM\CurrentControlSet\Control\WMI\Autologger\SentinelStatic"
@@ -133,7 +159,6 @@ call :DelKey "HKLM\SYSTEM\CurrentControlSet\Services\SentinelAgent"
 call :DelKey "HKLM\SYSTEM\CurrentControlSet\Services\SentinelHelperService"
 call :DelKey "HKLM\SYSTEM\CurrentControlSet\Services\SentinelMonitor"
 call :DelKey "HKLM\SYSTEM\CurrentControlSet\Services\SentinelStaticEngine"
-
 call :DelKey "HKLM\SYSTEM\Setup\FirstBoot\Services\LogProcessorService"
 call :DelKey "HKLM\SYSTEM\Setup\FirstBoot\Services\SentinelAgent"
 call :DelKey "HKLM\SYSTEM\Setup\FirstBoot\Services\SentinelHelperService"
@@ -141,23 +166,39 @@ call :DelKey "HKLM\SYSTEM\Setup\FirstBoot\Services\SentinelMonitor"
 call :DelKey "HKLM\SYSTEM\Setup\FirstBoot\Services\SentinelStaticEngine"
 
 :: ------------------------------------------------------
-:: Delete specific registry values
+:: Specific values
 :: ------------------------------------------------------
-echo [*] Deleting specific values...
-reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts" /v "SentinelOneLog_.binlog" /f
-reg delete "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run" /v "Sentinel Agent" /f
-reg delete "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" /v "Sentinel Agent" /f
+call :DelVal "HKCU\Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts" "SentinelOneLog_.binlog"
+call :DelVal "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run" "Sentinel Agent"
+call :DelVal "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" "Sentinel Agent"
 
 :: ------------------------------------------------------
 :: Delete SentinelOne program directories
 :: ------------------------------------------------------
 echo [*] Deleting directories...
-rmdir /s /q "C:\ProgramData\Sentinel"
-rmdir /s /q "C:\Program Files\SentinelOne"
+echo [*] Deleting directories... >> %LOGFILE%
 
-del %temp%\reset_acl.txt
+rmdir /s /q "C:\ProgramData\Sentinel" && (
+    echo [+] SUCCESS: C:\ProgramData\Sentinel >> %LOGFILE%
+    echo [+] SUCCESS: C:\ProgramData\Sentinel
+) || (
+    echo [!] FAILED: C:\ProgramData\Sentinel >> %LOGFILE%
+    echo [!] FAILED: C:\ProgramData\Sentinel
+)
+
+rmdir /s /q "C:\Program Files\SentinelOne" && (
+    echo [+] SUCCESS: C:\Program Files\SentinelOne >> %LOGFILE%
+    echo [+] SUCCESS: C:\Program Files\SentinelOne
+) || (
+    echo [!] FAILED: C:\Program Files\SentinelOne >> %LOGFILE%
+    echo [!] FAILED: C:\Program Files\SentinelOne
+)
+
+:: Cleanup
+del %temp%\reset_acl.txt >nul 2>&1
 
 echo.
 echo === SentinelOne removal complete. ===
+echo See log file for details: %LOGFILE%
 pause
 exit /b
